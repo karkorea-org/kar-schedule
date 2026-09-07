@@ -74,4 +74,45 @@ it("does not reinterpret invalid month-day cells or arbitrary workbooks", () => 
   const p = parseExcel(s, "Sheet2", 2026);
   expect(p.data.tasks).toHaveLength(0);
   expect(p.warnings.some((w) => w.includes("제외"))).toBe(true);
+  expect(p.incomplete).toBe(true);
+});
+
+function file(ws: XLSX.WorkSheet) {
+  const w = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(w, ws, "Sheet1");
+  return new Uint8Array(XLSX.write(w, { type: "array", bookType: "xlsx" }));
+}
+it("recognizes a new blank Excel and validates the year without a missing-year warning", () => {
+  const source = readExcel(file(XLSX.utils.aoa_to_sheet([])));
+  expect(source.blankSheets).toEqual(["Sheet1"]);
+  expect(parseExcel(source, "Sheet1", 2028)).toMatchObject({
+    blank: true,
+    incomplete: false,
+    warnings: [],
+    notices: [],
+    data: { tasks: [] },
+  });
+  for (const year of [0, NaN, 2026.5, 10000])
+    expect(() => parseExcel(source, "Sheet1", year)).toThrow("연도");
+});
+it("does not treat formulas, notes or a general table as a blank schedule", () => {
+  for (const cell of [
+    { t: "s", v: "", f: 'IF(TRUE,"",1)' },
+    { t: "s", v: "", c: [{ a: "작성자", t: "유지할 메모" }] },
+    { t: "s", v: "일반 표" },
+  ]) {
+    expect(() =>
+      readExcel(file({ A1: cell, "!ref": "A1" } as XLSX.WorkSheet)),
+    ).toThrow("업무일지 양식");
+  }
+});
+it("shows a missing year as a notice without blocking valid schedules", () => {
+  const source = readExcel(
+    file(XLSX.utils.aoa_to_sheet([["8월"], [null, "업무"]])),
+  );
+  const p = parseExcel(source, "Sheet1", 2027);
+  expect(p.notices[0]).toContain("2027년");
+  expect(p.warnings).toEqual([]);
+  expect(p.incomplete).toBe(false);
+  expect(p.data.tasks[0].start_date).toBe("2027-08-01");
 });

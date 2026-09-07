@@ -14,6 +14,21 @@ export interface ExcelSource {
   workbook: XLSX.WorkBook;
   colors: Record<string, Record<string, string>> | null;
   candidates: string[];
+  blankSheets: string[];
+}
+// Formatting alone is allowed, but formulas, notes, links and drawings are content.
+function isBlankSheet(ws: XLSX.WorkSheet): boolean {
+  return (
+    !ws["!merges"]?.length &&
+    Object.entries(ws).every(
+      ([key, cell]) =>
+        key.startsWith("!") ||
+        (!cell.f &&
+          !cell.c?.length &&
+          !cell.l &&
+          (cell.v === undefined || cell.v === null || cell.v === "")),
+    )
+  );
 }
 const value = (ws: XLSX.WorkSheet, r: number, c: number) =>
   ws[XLSX.utils.encode_cell({ r, c })]?.v;
@@ -47,24 +62,54 @@ export function readExcel(bytes: Uint8Array): ExcelSource {
         return true;
     return false;
   });
-  if (!candidates.length)
+  // A drawing or other sheet relationship must not be mistaken for a new blank file.
+  const archive = unzipSync(bytes);
+  const hasSheetObjects = Object.keys(archive).some(
+    (p) =>
+      /^xl\/(drawings|charts|tables|pivotTables|comments|threadedComments|media|embeddings)\//.test(
+        p,
+      ) ||
+      /^xl\/worksheets\/_rels\//.test(p) ||
+      p.startsWith("_xmlsignatures/"),
+  );
+  const blankSheets = hasSheetObjects
+    ? []
+    : workbook.SheetNames.filter(
+        (name) => name !== "ColorDB" && isBlankSheet(workbook.Sheets[name]),
+      );
+  if (!candidates.length && !blankSheets.length)
     throw new Error(
-      "월별 일정 형식의 시트를 찾지 못했습니다. A열 월 이름과 B~AF 날짜 열을 확인하세요.",
+      "업무일지 양식을 찾지 못했습니다. 기존 업무일지 파일 또는 내용이 없는 새 .xlsx 파일을 선택하세요. 일반 표 형식은 아직 지원하지 않습니다.",
     );
-  return { workbook, colors: buildMceStyleMap(safe), candidates };
+  return {
+    workbook,
+    colors: buildMceStyleMap(safe),
+    candidates: [...candidates, ...blankSheets],
+    blankSheets,
+  };
 }
 export function parseExcel(
   source: ExcelSource,
   sheet: string,
   baseYear: number,
-): { data: Snapshot; warnings: string[] } {
+): {
+  data: Snapshot;
+  warnings: string[];
+  notices: string[];
+  incomplete: boolean;
+  blank: boolean;
+} {
   if (!Number.isInteger(baseYear) || baseYear < 1900 || baseYear > 9999)
     throw new Error("기준 연도를 확인하세요.");
   const ws = source.workbook.Sheets[sheet],
     data = emptySnapshot(),
-    warnings: string[] = [];
+    warnings: string[] = [],
+    notices: string[] = [];
   if (!source.candidates.includes(sheet))
     throw new Error("일정 시트를 선택하세요.");
+  if (source.blankSheets.includes(sheet))
+    return { data, warnings, notices, incomplete: false, blank: true };
+  let incomplete = false;
   const range = XLSX.utils.decode_range(ws["!ref"]!),
     merges = ws["!merges"] ?? [];
   if (range.e.r > 20000 || range.e.c > 2000)
@@ -82,7 +127,7 @@ export function parseExcel(
       if (explicit) break;
     }
   if (!explicit)
-    warnings.push(
+    notices.push(
       `연도 표시가 없어 ${baseYear}년을 기준으로 읽었습니다. 실제 연도를 확인하세요.`,
     );
   const blocks: { row: number; month: number; year?: number }[] = [];
@@ -139,6 +184,7 @@ export function parseExcel(
         const m = merges.find((m) => m.s.r === r && m.s.c === c),
           end = m?.e.c ?? c;
         if (c > lastDay || end > lastDay || end < c || (m && m.e.r !== r)) {
+          incomplete = true;
           warnings.push(
             `${addr}: 월 일수 또는 병합 범위가 잘못되어 제외했습니다.`,
           );
@@ -201,14 +247,19 @@ export function parseExcel(
     }
   }
   validateSnapshot(data);
-  return { data, warnings };
+  return { data, warnings, notices, incomplete, blank: false };
 }
-export function exportExcel(snapshot: Snapshot): Uint8Array {
+export function exportExcel(
+  snapshot: Snapshot,
+  emptyMonths: string[] = [],
+): Uint8Array {
   validateSnapshot(snapshot);
-  if (!snapshot.tasks.length) throw new Error("내보낼 업무가 없습니다.");
-  const keys = new Set(
-      snapshot.tasks.flatMap((t) => months(t.start_date, t.end_date)),
-    ),
+  if (!snapshot.tasks.length && !emptyMonths.length)
+    throw new Error("내보낼 업무가 없습니다.");
+  const keys = new Set([
+      ...emptyMonths,
+      ...snapshot.tasks.flatMap((t) => months(t.start_date, t.end_date)),
+    ]),
     monthData: Record<string, { tasks: unknown[] }> = {};
   for (const key of [...keys].sort()) {
     const [a, b] = monthRange(key);
@@ -226,7 +277,11 @@ export function exportExcel(snapshot: Snapshot): Uint8Array {
     };
   }
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, buildMonthlySheet(monthData), "Sheet2");
+  XLSX.utils.book_append_sheet(
+    wb,
+    buildMonthlySheet(monthData, true),
+    "Sheet2",
+  );
   if (snapshot.custom_colors.length)
     XLSX.utils.book_append_sheet(
       wb,

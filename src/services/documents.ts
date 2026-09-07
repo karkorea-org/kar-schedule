@@ -26,13 +26,18 @@ export const documents = {
       new Uint8Array(f.bytes),
       f.info.sheet,
       snapshot,
+      f.info.template_year,
     );
     return files.saveLinkedExcel(bytes, revision);
   },
   async openExcel() {
-    const f = await files.openDocument("excel");
+    const f = await files.selectExcel();
     return f
-      ? { name: f.name, source: readExcel(new Uint8Array(f.bytes)) }
+      ? {
+          name: f.name,
+          token: f.token,
+          source: readExcel(new Uint8Array(f.bytes)),
+        }
       : null;
   },
   previewExcel: (source: ExcelSource, sheet: string, year: number) =>

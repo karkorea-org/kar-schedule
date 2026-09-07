@@ -147,3 +147,64 @@ it("refuses signed packages and missing schedule targets", () => {
     "전자 서명",
   );
 });
+it("initializes a new blank workbook for the chosen year and keeps all months after edit and delete", () => {
+  const w = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(w, XLSX.utils.aoa_to_sheet([]), "신입 업무");
+  XLSX.utils.book_append_sheet(
+    w,
+    XLSX.utils.aoa_to_sheet([["유지할 다른 시트"]]),
+    "안내",
+  );
+  const source = new Uint8Array(
+    XLSX.write(w, { type: "array", bookType: "xlsx" }),
+  );
+  expect(() =>
+    updateLinkedWorkbook(source, "신입 업무", emptySnapshot()),
+  ).toThrow("연도");
+  const initialized = updateLinkedWorkbook(
+    source,
+    "신입 업무",
+    emptySnapshot(),
+    2028,
+  );
+  const parsed = readExcel(initialized);
+  expect(parsed.blankSheets).toEqual([]);
+  expect(parseExcel(parsed, "신입 업무", 2026).notices).toEqual([]);
+  expect(parsed.workbook.Sheets["신입 업무"].A1.v).toContain("2028년");
+  expect(unzipSync(initialized)["xl/worksheets/sheet2.xml"]).toEqual(
+    unzipSync(source)["xl/worksheets/sheet2.xml"],
+  );
+  const tasks = data();
+  tasks.tasks[0].start_date = "2028-02-28";
+  tasks.tasks[0].end_date = "2028-02-29";
+  const edited = updateLinkedWorkbook(initialized, "신입 업무", tasks, 2028);
+  expect(
+    parseExcel(readExcel(edited), "신입 업무", 2026).data.tasks[0].end_date,
+  ).toBe("2028-02-29");
+  const emptied = updateLinkedWorkbook(
+    edited,
+    "신입 업무",
+    emptySnapshot(),
+    2028,
+  );
+  const sheet = readExcel(emptied).workbook.Sheets["신입 업무"];
+  expect(
+    Object.values(sheet).filter((cell) => /2028년 \d+월/.test(String(cell.v))),
+  ).toHaveLength(12);
+  expect(parseExcel(readExcel(emptied), "신입 업무", 2026).data.tasks).toEqual(
+    [],
+  );
+});
+it("refuses to overwrite a schedule whose task cells could not be imported", () => {
+  const w = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([["2026년 2월"], []]);
+  ws.AF2 = { t: "s", v: "2월 31일 업무" };
+  ws["!ref"] = "A1:AF2";
+  XLSX.utils.book_append_sheet(w, ws, "Sheet2");
+  const source = new Uint8Array(
+    XLSX.write(w, { type: "array", bookType: "xlsx" }),
+  );
+  expect(() => updateLinkedWorkbook(source, "Sheet2", emptySnapshot())).toThrow(
+    "저장을 중단",
+  );
+});

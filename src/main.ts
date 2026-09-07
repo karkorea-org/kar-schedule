@@ -742,6 +742,9 @@ document.querySelectorAll<HTMLElement>("[data-week]").forEach(
 );
 
 let connectionToken: string | null = null;
+let selectionToken: string | null = null;
+let linkRequested = false;
+let templateYear: number | null = null;
 let excelSource: ExcelSource | null = null,
   importData: Snapshot | null = null;
 function previewImport() {
@@ -752,17 +755,40 @@ function previewImport() {
       el<HTMLSelectElement>("import-sheet").value,
       Number(input("import-year").value),
     );
-    importData = p.data;
+    connectionToken = linkRequested || p.blank ? selectionToken : null;
+    templateYear = p.blank ? Number(input("import-year").value) : null;
+    importData = p.incomplete ? null : p.data;
+    el("import-title").textContent = p.blank
+      ? "새 업무일지 연결"
+      : connectionToken
+        ? "Excel 연결"
+        : "Excel 가져오기";
+    el("import-confirm").textContent = p.blank
+      ? "빈 파일 연결"
+      : connectionToken
+        ? "연결"
+        : "가져오기";
+    el("import-year-label").textContent = p.blank
+      ? "새 업무일지 연도"
+      : "연도 표시가 없는 파일의 기준 연도";
+    el("import-mode").closest("label")!.hidden = !!connectionToken;
     const dates = p.data.tasks
       .flatMap((t) => [t.start_date, t.end_date])
       .sort();
-    el("import-summary").textContent =
-      `업무 ${p.data.tasks.length}개 · ${dates[0] ?? "기간 없음"} ~ ${dates.at(-1) ?? ""}\n${connectionToken ? "연결 후 저장 버튼 또는 Ctrl+S / ⌘S를 누르면 이 파일의 선택한 일정 시트가 업데이트됩니다." : "원본 파일은 변경하지 않습니다."}`;
-    el("import-warnings").textContent = p.warnings.join("\n");
+    el("import-summary").textContent = p.blank
+      ? `내용이 없는 새 Excel입니다. 연결 후 저장 버튼 또는 Ctrl+S / ⌘S를 누르면 선택한 시트에 ${templateYear}년 1~12월 업무일지 양식을 만듭니다. 업무를 추가해 같은 파일에 계속 저장할 수 있습니다.`
+      : `업무 ${p.data.tasks.length}개 · ${dates[0] ?? "기간 없음"} ~ ${dates.at(-1) ?? ""}\n${connectionToken ? "연결 후 저장 버튼 또는 Ctrl+S / ⌘S를 누르면 이 파일의 선택한 일정 시트가 업데이트됩니다." : "원본 파일은 변경하지 않습니다."}`;
+    el("import-notices").textContent = p.notices.join("\n");
+    el("import-warnings").textContent =
+      (p.incomplete
+        ? "읽지 못한 업무가 있어 진행할 수 없습니다. 원본의 날짜·병합 범위를 확인하세요.\n"
+        : "") + p.warnings.join("\n");
     el<HTMLButtonElement>("import-confirm").disabled =
-      !connectionToken && !p.data.tasks.length;
+      p.incomplete || (!connectionToken && !p.data.tasks.length);
   } catch (e) {
     importData = null;
+    el("import-notices").textContent = "";
+    el("import-warnings").textContent = "";
     el("import-summary").textContent = String(e);
     el<HTMLButtonElement>("import-confirm").disabled = true;
   }
@@ -773,7 +799,8 @@ async function chooseExcel(link: boolean) {
       ? await documents.selectExcel()
       : await documents.openExcel();
     if (!f) return;
-    connectionToken =
+    linkRequested = link;
+    selectionToken =
       "token" in f && typeof f.token === "string" ? f.token : null;
     excelSource = f.source;
     el("import-title").textContent = link ? "Excel 연결" : "Excel 가져오기";
@@ -799,11 +826,13 @@ el("btn-disconnect").onclick = () =>
     toast("Excel 연결을 해제했습니다. 일정과 파일은 유지됩니다.");
   });
 el("import-sheet").onchange = previewImport;
-el("import-year").onchange = previewImport;
+el("import-year").oninput = previewImport;
 el("import-cancel").onclick = () =>
   el<HTMLDialogElement>("import-dialog").close();
 el("import-confirm").onclick = async () => {
+  previewImport();
   if (!importData) return;
+  const chosenYear = templateYear;
   const linking = !!connectionToken;
   const plan = linking ? connectionPlan(service.state, importData) : null;
   const replace =
@@ -827,14 +856,20 @@ el("import-confirm").onclick = async () => {
           el<HTMLSelectElement>("import-sheet").value,
           plan!.snapshot,
           service.state.revision,
+          chosenYear,
         );
         connection = await connectionInfo();
         connectionToken = null;
       } else await service.import(importData!, replace);
       el<HTMLDialogElement>("import-dialog").close();
       navigateImported();
+      if (chosenYear) currentMonth = `${chosenYear}-${today().slice(5, 7)}`;
     },
-    linking ? "Excel을 연결했습니다." : "가져왔습니다",
+    chosenYear
+      ? "빈 Excel을 연결했습니다. 저장을 누르면 업무일지 양식이 만들어집니다."
+      : linking
+        ? "Excel을 연결했습니다."
+        : "가져왔습니다",
   );
 };
 function navigateImported() {

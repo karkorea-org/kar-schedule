@@ -1,9 +1,13 @@
-"""Repackage the verified 2.0.2 Windows installer payload without rebuilding it."""
+"""Repackage a verified Windows installer payload without rebuilding it."""
 from pathlib import Path
 import hashlib
 import shutil
 import struct
 import zipfile
+import json
+import os
+
+version = os.environ.get("KAR_PACKAGE_VERSION") or json.loads(Path("package.json").read_text(encoding="utf-8"))["version"]
 
 source = Path("extracted")
 apps = list(source.rglob("kar-schedule.exe"))
@@ -36,7 +40,7 @@ manifest = {
 )
 out = Path("portable-release")
 out.mkdir()
-archive = out / "KAR-Schedule_2.0.2_windows-x64-portable.zip"
+archive = out / f"KAR-Schedule_{version}_windows-x64-portable.zip"
 with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
     for p in sorted(bundle.rglob("*")):
         if p.is_file():

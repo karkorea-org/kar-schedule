@@ -1,7 +1,6 @@
 import { unzipSync, zipSync, strFromU8, strToU8 } from "fflate";
 import XLSX from "xlsx-js-style";
-import { exportExcel } from "./excel";
-import { buildMonthlySheet } from "./legacy-report";
+import { exportExcel, readExcel, parseExcel } from "./excel";
 import { today } from "../domain/date";
 import type { Snapshot } from "../domain/task";
 
@@ -173,7 +172,20 @@ export function updateLinkedWorkbook(
   originalBytes: Uint8Array,
   sheet: string,
   snapshot: Snapshot,
+  templateYear?: number | null,
 ): Uint8Array {
+  const source = readExcel(originalBytes);
+  const baseYear =
+    templateYear ??
+    Number(snapshot.tasks[0]?.start_date.slice(0, 4) ?? today().slice(0, 4));
+  const preview = parseExcel(source, sheet, baseYear);
+  if (preview.incomplete)
+    throw new Error(
+      "읽지 못한 업무 셀이 있어 Excel 저장을 중단했습니다. 원본의 날짜·병합 범위를 확인하세요.\n" +
+        preview.warnings.join("\n"),
+    );
+  if (preview.blank && templateYear == null)
+    throw new Error("빈 Excel을 다시 연결하고 업무일지 연도를 선택하세요.");
   let expanded = 0;
   const original = unzipSync(originalBytes, {
     filter: (e) => {
@@ -192,20 +204,20 @@ export function updateLinkedWorkbook(
     destination = meta.sheets.get(sheet);
   if (!destination || sheet === "ColorDB")
     throw new Error("연결한 일정 시트를 찾을 수 없습니다. 다시 연결하세요.");
-  let generatedBytes: Uint8Array;
-  if (snapshot.tasks.length)
-    generatedBytes = new Uint8Array(exportExcel(snapshot));
-  else {
-    const w = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      w,
-      buildMonthlySheet({ [today().slice(0, 7)]: { tasks: [] } }, true),
-      "Sheet2",
-    );
-    generatedBytes = new Uint8Array(
-      XLSX.write(w, { type: "array", bookType: "xlsx" }),
-    );
-  }
+  const emptyMonths = preview.blank
+    ? Array.from(
+        { length: 12 },
+        (_, i) => `${baseYear}-${String(i + 1).padStart(2, "0")}`,
+      )
+    : Object.entries(source.workbook.Sheets[sheet])
+        .filter(([address]) => /^A\d+$/.test(address))
+        .flatMap(([, cell]) => {
+          const match = String(cell.v ?? "").match(/(\d{4})년\s+(\d{1,2})월/);
+          return match ? [`${match[1]}-${match[2].padStart(2, "0")}`] : [];
+        });
+  if (!snapshot.tasks.length && !emptyMonths.length)
+    emptyMonths.push(`${baseYear}-01`);
+  const generatedBytes = new Uint8Array(exportExcel(snapshot, emptyMonths));
   const generated = unzipSync(generatedBytes),
     genMeta = sheetPaths(generated);
   const palette = XLSX.utils.book_new();

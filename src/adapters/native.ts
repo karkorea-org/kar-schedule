@@ -36,6 +36,7 @@ export interface ExcelLink {
   sheet: string;
   hash: string;
   saved_revision: number;
+  template_year?: number | null;
 }
 export const connectionInfo = () => invoke<ExcelLink | null>("connection_info");
 export const selectExcel = () =>
@@ -45,12 +46,14 @@ export const connectExcel = (
   sheet: string,
   snapshot: Snapshot,
   revision: number,
+  templateYear: number | null = null,
 ) =>
   invoke<VersionedSnapshot>("connect_excel", {
     token,
     sheet,
     snapshot,
     revision,
+    templateYear,
   });
 export const readLinkedExcel = () =>
   invoke<{ info: ExcelLink; bytes: number[] }>("read_linked_excel");

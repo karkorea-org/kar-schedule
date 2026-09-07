@@ -1,8 +1,8 @@
-KAR 업무 일정 2.0.2 — Windows NAS 실행용
+KAR 업무 일정 — Windows NAS 실행용
 
 1. 다운로드와 NAS 준비 (관리자 1명)
-GitHub의 비공개 테스트 릴리스 v2.0.2-test.1에서
-KAR-Schedule_2.0.2_windows-x64-portable.zip을 받습니다.
+GitHub의 비공개 테스트 릴리스에서
+해당 버전의 KAR-Schedule_*_windows-x64-portable.zip을 받습니다.
 ZIP을 먼저 풀고, 안의 KAR Schedule 폴더 전체를 NAS 공유 폴더에 복사합니다.
 예: NAS의 공유 프로그램 폴더 안에 KAR Schedule 폴더를 둡니다.
 프로그램 폴더는 관리자만 수정하고, 직원은 읽기/실행이 가능하도록 둡니다.
@@ -52,5 +52,5 @@ SQLite와 화면 캐시를 NAS의 프로그램 폴더로 옮기지 않습니다.
 이 패키지는 Windows 10/11 x64용입니다. Mac에서 .exe를 실행할 수는 없습니다.
 회사 NAS와 노트북에서 실제 실행·저장·동기화 확인은 위 순서로 진행하세요.
 
-다운로드: https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.2-test.1
+다운로드: https://github.com/karkorea-org/kar-schedule/releases
 WebView2 설명: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution

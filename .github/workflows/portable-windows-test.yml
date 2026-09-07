@@ -21,6 +21,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Installer extraction failed.' }
           Get-ChildItem extracted -Recurse -File | Select-Object FullName, Length
       - name: Package portable app and offline prerequisite
+        env:
+          KAR_PACKAGE_VERSION: "2.0.2"
         run: python scripts/package-portable.py
       - name: Test local and read-only SMB launches
         run: ./scripts/test-portable-windows.ps1

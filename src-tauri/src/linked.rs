@@ -15,6 +15,8 @@ pub struct Link {
     pub sheet: String,
     pub hash: String,
     pub saved_revision: i64,
+    #[serde(default)]
+    pub template_year: Option<i32>,
 }
 pub struct Pending {
     pub token: String,
@@ -72,7 +74,7 @@ pub async fn select_excel(app: tauri::AppHandle) -> Result<Option<Selection>, St
     tauri::async_runtime::spawn_blocking(move || {
         let store = app.state::<Store>();
         let mut dialog = rfd::FileDialog::new()
-            .set_title("KAR — 연결할 본인 업무 Excel 선택")
+            .set_title("KAR — 업무 Excel 선택 (새 빈 파일도 가능)")
             .add_filter("Excel 업무 일정", &["xlsx"]);
         if let Some(dir) = store.last_dir.lock().unwrap().as_ref() {
             dialog = dialog.set_directory(dir);
@@ -90,6 +92,7 @@ pub async fn select_excel(app: tauri::AppHandle) -> Result<Option<Selection>, St
         let bytes = read_file(&path)?;
         let token = uuid::Uuid::new_v4().to_string();
         *store.last_dir.lock().unwrap() = path.parent().map(Path::to_path_buf);
+        store.imported.lock().unwrap().insert(path.clone());
         *store.pending_excel.lock().unwrap() = Some(Pending {
             token: token.clone(),
             path: path.clone(),
@@ -115,7 +118,11 @@ pub async fn connect_excel(
     sheet: String,
     snapshot: Snapshot,
     revision: i64,
+    template_year: Option<i32>,
 ) -> Result<Versioned, String> {
+    if template_year.is_some_and(|y| !(1900..=9999).contains(&y)) {
+        return Err("업무일지 연도를 확인하세요.".into());
+    }
     if sheet.is_empty() || sheet.len() > 124 || sheet == "ColorDB" {
         return Err("일정 시트를 선택하세요.".into());
     }
@@ -131,7 +138,8 @@ pub async fn connect_excel(
         path: p.path.clone(),
         sheet,
         hash: p.hash.clone(),
-        saved_revision: revision + 1,
+        saved_revision: if template_year.is_some() { revision } else { revision + 1 },
+        template_year,
     };
     let json = serde_json::to_string(&info).map_err(|e| e.to_string())?;
     let mut db = store.db.lock().map_err(|_| "저장소 잠금 오류")?;
@@ -251,13 +259,21 @@ mod tests {
     fn connection_and_snapshot_commit_together_and_survive_restart() {
         let d=tempfile::tempdir().unwrap();let path=d.path().join("test.db");
         let mut c=database::open(&path).unwrap();
-        let link=Link{path:d.path().join("업무.xlsx"),sheet:"Sheet2".into(),hash:"original".into(),saved_revision:1};
+        let link=Link{path:d.path().join("업무.xlsx"),sheet:"Sheet2".into(),hash:"original".into(),saved_revision:1,template_year:Some(2027)};
         let json=serde_json::to_string(&link).unwrap();
         database::commit_with_link(&mut c,Snapshot::default(),0,true,&d.path().join("backups"),Some(&json)).unwrap();
         drop(c);let mut c=database::open(&path).unwrap();assert_eq!(get(&c).unwrap().unwrap().saved_revision,1);
+        assert_eq!(get(&c).unwrap().unwrap().template_year, Some(2027));
         c.execute_batch("CREATE TRIGGER reject_metadata BEFORE INSERT ON local_settings BEGIN SELECT RAISE(ABORT,'failed metadata'); END;").unwrap();
         assert!(database::commit_with_link(&mut c,Snapshot::default(),1,false,d.path(),Some("{}" )).is_err());
         assert_eq!(database::load(&c).unwrap().revision,1);assert_eq!(get(&c).unwrap().unwrap().hash,"original");
+    }
+    #[test]
+    fn previous_version_links_remain_readable() {
+        let old = r#"{"path":"work.xlsx","sheet":"Sheet2","hash":"old","saved_revision":1}"#;
+        let link: Link = serde_json::from_str(old).unwrap();
+        assert_eq!(link.template_year, None);
+        assert_eq!(link.saved_revision, 1);
     }
     #[test]
     fn save_preserves_previous_file_and_rejects_external_changes_and_excel_lock() {
@@ -269,6 +285,7 @@ mod tests {
             sheet: "Sheet2".into(),
             hash: hash(b"PK-original"),
             saved_revision: 0,
+            template_year: None,
         };
         let backup = d.path().join("backups");
         let h = write_checked(&link, b"PK-updated", &backup).unwrap();
