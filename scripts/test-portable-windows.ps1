@@ -53,6 +53,9 @@ function Test-AppLaunch([string]$Executable) {
 
 $before = Get-BundleHashes
 Test-AppLaunch (Join-Path $bundle 'kar-schedule.exe')
+$database = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::ApplicationData)) 'kr.kar.schedule/kar-schedule.sqlite3'
+python scripts/check-upgrade-data.py seed $database
+if ($LASTEXITCODE -ne 0) { throw 'Upgrade fixture setup failed.' }
 $shareName = 'KARPortableQA'
 $account = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 $shareCreated = $false
@@ -60,6 +63,8 @@ try {
     New-SmbShare -Name $shareName -Path $bundle -ReadAccess $account | Out-Null
     $shareCreated = $true
     Test-AppLaunch "\\localhost\$shareName\kar-schedule.exe"
+    python scripts/check-upgrade-data.py verify $database
+    if ($LASTEXITCODE -ne 0) { throw 'Existing data or Excel connection changed during restart.' }
 } finally {
     if ($shareCreated) { Remove-SmbShare -Name $shareName -Force }
 }

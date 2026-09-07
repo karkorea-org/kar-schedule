@@ -73,7 +73,7 @@ export function buildMonthlySheet(monthData, includeEmpty=false){
 
       const wdRow = [`${y}년 ${m+1}월`];
       for (let d = 1; d <= MAX_DAYS; d++){
-        wdRow.push(d <= days ? WEEKDAYS_KR[weekdayOf(y,m,d)] : '');
+        wdRow.push(d <= days ? `${d}(${WEEKDAYS_KR[weekdayOf(y,m,d)]})` : '');
       }
       rows.push(wdRow);
 
@@ -188,6 +188,7 @@ export function buildMonthlySheet(monthData, includeEmpty=false){
       const addr = XLSX.utils.encode_cell({r, c});
       if (ws[addr]){
         ws[addr].c = [{ a: 'KAR Schedule', t: text }];
+        ws[addr].c.hidden = true;
       }
     });
 
@@ -207,4 +208,3 @@ export function buildMonthlySheet(monthData, includeEmpty=false){
 
     return ws;
   }
-

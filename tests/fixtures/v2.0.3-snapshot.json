@@ -1,0 +1,51 @@
+{
+  "tasks": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "title": "QA task 1",
+      "start_date": "2026-09-07",
+      "end_date": "2026-09-13",
+      "notes": "세부 내용\n한글 · English · 체크리스트 ✓",
+      "done": false,
+      "color": "123456",
+      "sort_order": 0,
+      "display_row": 0,
+      "created_at": "2026-09-07T00:00:00Z",
+      "updated_at": "2026-09-07T00:00:00Z"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "title": "QA task 2",
+      "start_date": "2026-12-30",
+      "end_date": "2027-01-02",
+      "notes": "세부 내용\n한글 · English · 체크리스트 ✓",
+      "done": true,
+      "color": "123456",
+      "sort_order": 1,
+      "display_row": 1,
+      "created_at": "2026-09-07T00:00:00Z",
+      "updated_at": "2026-09-07T00:00:00Z"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "title": "QA task 3",
+      "start_date": "2028-02-28",
+      "end_date": "2028-02-29",
+      "notes": "세부 내용\n한글 · English · 체크리스트 ✓",
+      "done": false,
+      "color": "123456",
+      "sort_order": 2,
+      "display_row": 2,
+      "created_at": "2026-09-07T00:00:00Z",
+      "updated_at": "2026-09-07T00:00:00Z"
+    }
+  ],
+  "task_month_layout": [],
+  "custom_colors": [
+    {
+      "hex": "123456",
+      "label": "검토",
+      "sort_order": 0
+    }
+  ]
+}
