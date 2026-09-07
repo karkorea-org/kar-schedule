@@ -1,0 +1,50 @@
+name: Publish Windows 2.0.2 test installer
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify the completed source build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/karkorea-org/kar-schedule/actions/runs/34085783484 > build-run.json
+          python3 - <<'PYTHON'
+          import json
+          run = json.load(open('build-run.json'))
+          assert run['conclusion'] == 'success', 'Source build must succeed'
+          assert run['head_sha'] == '7705bf93c576655c67327fde54aa6dfd315199cb', 'Unexpected source commit'
+          assert run['path'] == '.github/workflows/desktop-build.yml', 'Unexpected source workflow'
+          PYTHON
+      - uses: actions/download-artifact@v5
+        with:
+          github-token: ${{ github.token }}
+          run-id: 34085783484
+          name: KAR-Schedule-x86_64-pc-windows-msvc
+          path: installer
+      - name: Prepare installer and checksum
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          import hashlib, shutil
+          files = list(Path('installer').rglob('*.exe'))
+          assert len(files) == 1, 'Expected one Windows installer'
+          assert files[0].read_bytes()[:2] == b'MZ', 'Expected Windows executable'
+          out = Path('release'); out.mkdir()
+          dest = out / 'KAR-Schedule_2.0.2_windows-x64-setup.exe'
+          shutil.copy2(files[0], dest)
+          digest = hashlib.sha256(dest.read_bytes()).hexdigest()
+          (out / 'SHA256SUMS-Windows.txt').write_text(f'{digest}  {dest.name}\n')
+          print(f'Installer: {dest.name}, bytes: {dest.stat().st_size}, SHA256: {digest}')
+          PYTHON
+      - name: Publish private repository test release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v2.0.2-test.1 release/* --repo karkorea-org/kar-schedule --target 7705bf93c576655c67327fde54aa6dfd315199cb --prerelease --title 'KAR 업무 일정 2.0.2 — Windows 테스트' --notes-file docs/releases/v2.0.2-test.1.md
