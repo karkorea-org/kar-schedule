@@ -4,6 +4,8 @@
 
 ## 지금 테스트하기
 
+Windows 노트북에서는 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.2-test.1)의 Assets에서 `.exe`를 다운로드해 설치합니다. [Windows 설치 안내](docs/WINDOWS_INSTALL.md)를 참고하세요. 사용자 PC에는 개발 도구가 필요 없습니다.
+
 이 컴퓨터에서는 프로젝트의 `outputs/KAR Schedule 2.0.2.app`을 더블클릭하면 됩니다. 설치용 파일은 `outputs/KAR Schedule_2.0.2_aarch64.dmg`입니다. Apple Silicon Mac용이며, Node/Rust/Excel이나 개발 서버 없이 실행됩니다.
 
 [테스트 안내](docs/V2_TEST_GUIDE.md)에 업무 추가, 여러 달 일정, 드래그, Excel, 백업·복원 확인 순서를 적었습니다. 기존에 저장한 일정은 앱 업데이트 후에도 유지됩니다. 새 PC의 첫 실행은 빈 일정으로 시작합니다.
