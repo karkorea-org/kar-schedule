@@ -1,0 +1,39 @@
+# macOS
+.DS_Store
+
+# Node / npm (테스트용 xlsx 모듈 등)
+node_modules/
+
+# Excel 파일은 개인 업무 데이터라 repo에 포함하지 않음
+*.xlsx
+*.xls
+~$*.xlsx
+~$*.xls
+
+# Claude Code 로컬 설정
+.claude/settings.local.json
+
+# 테스트용 파일
+0. 업무 일지 캘린더_test.html
+
+# V2 build artifacts and project-local toolchain
+.tools/
+dist/
+src-tauri/target/
+test-results/
+playwright-report/
+outputs/
+*.log
+.playwright-cli/
+
+# Machine-local data and credentials
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+.env
+.env.*
+dist-windows/
+src-tauri/gen/

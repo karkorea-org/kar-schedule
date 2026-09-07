@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KAR 업무 일정</title>
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <main id="input-view">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark">KAR</span
+          ><span class="brand-title">업무 일정 캘린더</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn-secondary" id="btn-connect">Excel 연결</button>
+          <button class="modal-save-btn" id="btn-save" title="Ctrl+S / ⌘S">
+            저장
+          </button>
+          <button class="btn-secondary" id="btn-more">더 보기</button>
+          <span class="file-status" id="file-status" role="status"
+            >불러오는 중…</span
+          >
+        </div>
+      </header>
+      <div id="startup-message" hidden></div>
+      <div class="schedule-body">
+        <section class="month-control">
+          <button class="nav-btn" id="prev-month" aria-label="이전 달">
+            ◀
+          </button>
+          <div class="month-display">
+            <div class="month-label" id="month-label">이번 달</div>
+            <div class="month-title" id="month-title"></div>
+          </div>
+          <button class="nav-btn" id="next-month" aria-label="다음 달">▶</button
+          ><button class="add-log-btn" id="add-log-btn">
+            ＋ 업무 일지 추가
+          </button>
+        </section>
+        <section class="calendar-wrap" id="monthly-wrap">
+          <div class="calendar" id="calendar"></div>
+        </section>
+        <section class="tw-section weekly-calendar-section">
+          <div class="tw-header">
+            <div class="tw-title-group">
+              <div class="tw-week-toggle" role="tablist">
+                <button class="tw-week-toggle-btn" data-week="-1" role="tab">
+                  지난주</button
+                ><button
+                  class="tw-week-toggle-btn is-active"
+                  data-week="0"
+                  role="tab"
+                >
+                  이번주</button
+                ><button class="tw-week-toggle-btn" data-week="1" role="tab">
+                  다음주
+                </button>
+              </div>
+              <span class="tw-badge" id="tw-badge">이번주 업무</span
+              ><span class="tw-range" id="tw-range"></span>
+            </div>
+          </div>
+          <div class="calendar-wrap weekly-calendar-wrap">
+            <div class="calendar is-expanded" id="weekly-calendar"></div>
+          </div>
+        </section>
+        <p class="storage-hint" id="storage-hint">
+          업무 변경은 이 컴퓨터에 보관됩니다. 저장 또는 Ctrl+S / ⌘S로 연결된
+          Excel에 반영하세요.
+        </p>
+      </div>
+    </main>
+    <div
+      class="modal-overlay"
+      id="task-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title-text"
+    >
+      <div class="modal" role="document">
+        <div class="modal-header">
+          <div class="modal-title" id="modal-title-text">업무 상세</div>
+          <button class="modal-close" id="modal-close-btn" aria-label="닫기">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label class="modal-done-row" id="modal-done-row">
+              <span
+                class="done-toggle"
+                id="modal-done-toggle"
+                role="checkbox"
+                aria-checked="false"
+                tabindex="0"
+              ></span>
+              <span class="modal-done-text">완료된 업무로 표시</span>
+            </label>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label" for="modal-title-input">업무 제목</label>
+            <input
+              type="text"
+              class="modal-input"
+              id="modal-title-input"
+              placeholder="업무 내용"
+            />
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">기간</label>
+            <div class="modal-dates">
+              <input
+                type="date"
+                class="modal-date-input modal-date-picker"
+                id="modal-start-input"
+                aria-label="시작일"
+              />
+              <span class="modal-dates-sep">—</span>
+              <input
+                type="date"
+                class="modal-date-input modal-date-picker"
+                id="modal-end-input"
+                aria-label="종료일"
+              />
+              <span class="modal-dates-display" id="modal-dates-display"></span>
+            </div>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">색상</label>
+            <div class="color-picker">
+              <div
+                class="color-swatches"
+                id="task-modal-swatches"
+                role="radiogroup"
+                aria-label="바 배경색"
+              ></div>
+              <div class="color-custom-dropdown-wrap">
+                <button
+                  type="button"
+                  class="color-custom-btn"
+                  id="task-modal-custom-btn"
+                >
+                  커스텀 ▼
+                </button>
+                <div
+                  class="color-custom-dropdown"
+                  id="task-modal-custom-dropdown"
+                >
+                  <div
+                    class="custom-color-list"
+                    id="task-modal-custom-list"
+                  ></div>
+                  <div class="custom-color-new">
+                    <input
+                      type="color"
+                      id="task-modal-color-custom"
+                      aria-label="커스텀 색상"
+                      value="#ffffff"
+                    />
+                    <input
+                      type="text"
+                      class="custom-color-name-input"
+                      id="task-modal-color-name"
+                      placeholder="색상 이름"
+                      aria-label="커스텀 색상 이름"
+                    />
+                    <button
+                      type="button"
+                      class="custom-color-add-btn"
+                      id="task-modal-color-add"
+                    >
+                      추가
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label" for="modal-notes-input">세부 내용</label>
+            <textarea
+              class="modal-notes"
+              id="modal-notes-input"
+              placeholder="상세 메모, 체크리스트, 참고 링크 등을 자유롭게 적으세요..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="modal-actions">
+            <button class="modal-delete-btn" id="modal-delete-btn">삭제</button>
+            <button class="modal-save-btn" id="modal-save-btn">저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div class="cal-tip" id="cal-tip"></div>
+    <div class="version">v2.0.2 · 오프라인</div>
+    <dialog id="decision" class="native-dialog">
+      <form method="dialog">
+        <h2 id="decision-title"></h2>
+        <p id="decision-message"></p>
+        <input id="decision-input" class="modal-input" maxlength="100" hidden />
+        <div class="dialog-actions">
+          <button value="cancel" class="btn-secondary">취소</button
+          ><button value="ok" class="modal-save-btn">확인</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="import-dialog" class="native-dialog">
+      <h2 id="import-title">Excel 가져오기</h2>
+      <p id="import-name"></p>
+      <label
+        >일정 시트<select id="import-sheet" class="modal-input"></select></label
+      ><label
+        >연도 표시가 없는 파일의 기준 연도<input
+          id="import-year"
+          type="number"
+          min="1900"
+          max="9999"
+          class="modal-input"
+      /></label>
+      <div id="import-summary" role="status"></div>
+      <div id="import-warnings"></div>
+      <label
+        >가져오기 방식<select id="import-mode" class="modal-input">
+          <option value="append">기존 일정에 추가</option>
+          <option value="replace">기존 일정 전체 교체 (사전 백업)</option>
+        </select></label
+      >
+      <div class="dialog-actions">
+        <button id="import-cancel" class="btn-secondary">취소</button
+        ><button id="import-confirm" class="modal-save-btn">가져오기</button>
+      </div>
+    </dialog>
+    <dialog id="more-dialog" class="native-dialog">
+      <h2>더 보기</h2>
+      <button class="btn-secondary" id="btn-export">
+        다른 이름으로 내보내기
+      </button>
+      <button class="btn-secondary" id="btn-import">
+        다른 Excel 일정 추가
+      </button>
+      <button class="btn-secondary" id="btn-backup">백업</button>
+      <button class="btn-secondary" id="btn-restore">복원</button>
+      <button class="btn-secondary" id="btn-disconnect">Excel 연결 해제</button>
+      <button class="btn-secondary" id="btn-v1">V1 JSON 가져오기</button
+      ><button class="btn-secondary" id="btn-recovery">
+        자동 복구 사본 복원</button
+      ><button class="btn-secondary" id="btn-info">저장 위치 확인</button
+      ><button class="modal-delete-btn" id="btn-reset">전체 일정 초기화</button>
+      <p class="storage-hint">
+        백업 JSON은 PC 간 이동과 전체 복원에 사용합니다. 복원·전체 교체 전에는
+        자동 복구용 DB 사본을 남깁니다.
+      </p>
+      <form method="dialog"><button class="btn-secondary">닫기</button></form>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

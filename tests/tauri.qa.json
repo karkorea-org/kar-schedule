@@ -1,0 +1,17 @@
+{
+  "productName": "KAR Schedule QA",
+  "identifier": "kr.kar.schedule.qa",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "KAR 업무 일정 QA",
+        "width": 1320,
+        "height": 900,
+        "minWidth": 800,
+        "minHeight": 600,
+        "dragDropEnabled": false
+      }
+    ]
+  }
+}

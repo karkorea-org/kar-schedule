@@ -1,0 +1,35 @@
+{
+  "name": "kar-schedule",
+  "version": "2.0.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "tauri": "tauri",
+    "desktop": "node scripts/desktop.mjs dev",
+    "package": "node scripts/desktop.mjs build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test:native": "node scripts/desktop.mjs cargo test --manifest-path src-tauri/Cargo.toml --locked",
+    "format": "prettier --write src tests scripts index.html package.json tsconfig.json vite.config.ts vitest.config.ts"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.0",
+    "fflate": "0.8.3",
+    "pretendard": "1.3.9",
+    "xlsx-js-style": "1.2.0"
+  },
+  "devDependencies": {
+    "@playwright/cli": "^0.1.19",
+    "@playwright/test": "^1.58.0",
+    "@tauri-apps/cli": "2.11.4",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^24.0.0",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.9.6",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.0",
+    "vitest": "^3.2.0"
+  }
+}

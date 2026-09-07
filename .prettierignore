@@ -1,0 +1,8 @@
+legacy/
+docs/
+outputs/
+.tools/
+src-tauri/
+package-lock.json
+src/excel/legacy-style.ts
+src/excel/legacy-report.ts
