@@ -2,6 +2,14 @@
 
 기록일: 2026-09-07 / 앱 2.0.0 / macOS arm64. 사용자의 후속 구현 요청에 따라 분석 전용 단계에서 실제 앱 구현 단계로 진행했다. 기존 5개 설계 문서는 분석 기준선이며, 현재 구현/검증 상태는 이 문서가 우선한다.
 
+## 2.0.2 NAS 실행용 패키지
+
+검증된 Windows 설치 파일(소스 `7705bf9`, 설치 파일 SHA-256 `53ee99fc1fef8831d2894e3621977e627b5d93ebc78ea0ac9db76658f6cf9a88`)에서 실행 파일과 오프라인 WebView2 설치 구성요소를 추출해 포터블 ZIP으로 배포했다. 앱 소스와 실행 파일은 변경하지 않았다. Microsoft 구성요소의 서명, 앱 PE x64 형식, ZIP 무결성과 배포 폴더 SHA를 검사했다.
+
+[Windows 포터블 검증 실행](https://github.com/karkorea-org/kar-schedule/actions/runs/34091445097)에서 로컬 경로 및 `\\localhost\KARPortableQA\kar-schedule.exe` 읽기 전용 SMB 경로로 앱 창이 열리고, SQLite가 사용자 AppData/Roaming/kr.kar.schedule에 생성되는 것을 확인했다. 실행 전후 배포 폴더 파일 목록과 SHA가 같았다. 이는 CI의 SMB 공유 시험이며 회사의 실제 NAS, 직원 PC, 오프라인 첫 실행과 Excel/FreeFileSync 조합을 실측한 것은 아니다. [NAS 안내](NAS_START_HERE.txt)에 첫 실행·개인 Excel 연결·바로가기·업데이트 절차를 담았다.
+
+ZIP: `KAR-Schedule_2.0.2_windows-x64-portable.zip` (264,612,552 bytes), SHA-256 `98dcfd5bcedebd4fbc06a12e492b9a625f5e0ed59eb088311453d8a4224d1e20`. 앱 설치 없이 실행하며 WebView2 없는 PC에는 동봉 구성요소 설치가 한 번 필요하다.
+
 ## 2.0.2 Windows 빌드 — 2026-09-07
 
 사용자 요청으로 `karkorea-org/kar-schedule` 비공개 저장소를 만들고 개인 Excel·SQLite·기존 Git 이력을 제외한 앱 소스를 올렸다. [Windows 빌드 #2](https://github.com/karkorea-org/kar-schedule/actions/runs/34085783484), 소스 커밋 `7705bf9`에서 Windows x64 NSIS 설치 파일을 생성했다. 첫 빌드의 npm 다운로드 오류는 버전 변경 때 잘못 바뀐 테스트 의존성 잠금 기록을 수정해 해결했다. 깨끗한 소스 폴더에서도 `npm ci`, 테스트, production build를 다시 확인했다.

@@ -4,6 +4,8 @@
 
 ## 지금 테스트하기
 
+NAS에서 바로 실행하려면 [테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.2-test.1)의 `portable.zip`을 받고 [NAS 세팅·첫 실행 안내](docs/NAS_START_HERE.txt)를 따르세요. Windows 읽기 전용 SMB 공유에서 시작과 로컬 데이터 생성을 확인했습니다.
+
 Windows 노트북에서는 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.2-test.1)의 Assets에서 `.exe`를 다운로드해 설치합니다. [Windows 설치 안내](docs/WINDOWS_INSTALL.md)를 참고하세요. 사용자 PC에는 개발 도구가 필요 없습니다.
 
 이 컴퓨터에서는 프로젝트의 `outputs/KAR Schedule 2.0.2.app`을 더블클릭하면 됩니다. 설치용 파일은 `outputs/KAR Schedule_2.0.2_aarch64.dmg`입니다. Apple Silicon Mac용이며, Node/Rust/Excel이나 개발 서버 없이 실행됩니다.
