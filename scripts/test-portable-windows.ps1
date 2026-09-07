@@ -21,6 +21,8 @@ function Get-BundleHashes {
 }
 
 function Test-AppLaunch([string]$Executable) {
+    $dataRoot = [Environment]::GetFolderPath([Environment+SpecialFolder]::ApplicationData)
+    $database = Join-Path $dataRoot 'kr.kar.schedule/kar-schedule.sqlite3'
     $app = Start-Process -FilePath $Executable -WorkingDirectory $env:TEMP -PassThru
     try {
         $ready = $false
@@ -28,14 +30,18 @@ function Test-AppLaunch([string]$Executable) {
             Start-Sleep -Seconds 1
             $app.Refresh()
             if ($app.HasExited) { throw "App exited during startup: $($app.ExitCode)" }
-            if ($app.MainWindowHandle -ne 0 -and $app.MainWindowTitle -eq 'KAR 업무 일정') {
+            if ($app.MainWindowHandle -ne 0 -and $app.MainWindowTitle -eq 'KAR 업무 일정' -and (Test-Path $database)) {
                 $ready = $true
                 break
             }
         }
-        if (-not $ready) { throw 'Expected KAR application window did not appear.' }
-        $database = Join-Path $env:APPDATA 'kr.kar.schedule/kar-schedule.sqlite3'
-        if (-not (Test-Path $database)) { throw 'Expected per-user local SQLite database.' }
+        if (-not $ready) {
+            Write-Output "Window: $($app.MainWindowTitle); expected SQLite: $database; APPDATA: $env:APPDATA"
+            foreach ($root in @($dataRoot, $env:LOCALAPPDATA)) {
+                Get-ChildItem (Join-Path $root 'kr.kar.schedule*') -Recurse -File -ErrorAction SilentlyContinue | Select-Object FullName, Length
+            }
+            throw 'Expected KAR window and per-user SQLite initialization did not finish.'
+        }
         Write-Output "Startup passed: $Executable; local database: $database"
     } finally {
         if (-not $app.HasExited) {
