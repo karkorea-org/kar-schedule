@@ -1,0 +1,33 @@
+name: Prepare Windows 2.0.2 NAS package
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  portable:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download and verify the released installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v2.0.2-test.1 --repo karkorea-org/kar-schedule --pattern KAR-Schedule_2.0.2_windows-x64-setup.exe --dir installer
+          if ($LASTEXITCODE -ne 0) { throw 'Installer download failed.' }
+          $installer = Get-Item installer/KAR-Schedule_2.0.2_windows-x64-setup.exe
+          if ((Get-FileHash $installer -Algorithm SHA256).Hash -ne '53ee99fc1fef8831d2894e3621977e627b5d93ebc78ea0ac9db76658f6cf9a88') { throw 'Unexpected installer checksum.' }
+          7z x $installer.FullName -oextracted -y
+          if ($LASTEXITCODE -ne 0) { throw 'Installer extraction failed.' }
+          Get-ChildItem extracted -Recurse -File | Select-Object FullName, Length
+      - name: Package portable app and offline prerequisite
+        run: python scripts/package-portable.py
+      - name: Test local and read-only SMB launches
+        run: ./scripts/test-portable-windows.ps1
+      - name: Upload verified NAS package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = @(Get-ChildItem portable-release -File | ForEach-Object FullName)
+          gh release upload v2.0.2-test.1 @assets --repo karkorea-org/kar-schedule
+          if ($LASTEXITCODE -ne 0) { throw 'Portable release upload failed.' }
