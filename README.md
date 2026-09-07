@@ -4,11 +4,11 @@
 
 ## 지금 테스트하기
 
-NAS에서 바로 실행하려면 [테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.2-test.1)의 `portable.zip`을 받고 [NAS 세팅·첫 실행 안내](docs/NAS_START_HERE.txt)를 따르세요. Windows 읽기 전용 SMB 공유에서 시작과 로컬 데이터 생성을 확인했습니다.
+NAS에서 바로 실행하려면 [테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.3-test.1)의 `portable.zip`을 받고 [NAS 세팅·첫 실행 안내](docs/NAS_START_HERE.txt)를 따르세요. Windows 읽기 전용 SMB 공유에서 시작과 로컬 데이터 생성을 확인했습니다.
 
-Windows 노트북에서는 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.2-test.1)의 Assets에서 `.exe`를 다운로드해 설치합니다. [Windows 설치 안내](docs/WINDOWS_INSTALL.md)를 참고하세요. 사용자 PC에는 개발 도구가 필요 없습니다.
+Windows 노트북에서는 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.3-test.1)의 Assets에서 `.exe`를 다운로드해 설치합니다. [Windows 설치 안내](docs/WINDOWS_INSTALL.md)를 참고하세요. 사용자 PC에는 개발 도구가 필요 없습니다.
 
-이 컴퓨터에서는 프로젝트의 `outputs/KAR Schedule 2.0.2.app`을 더블클릭하면 됩니다. 설치용 파일은 `outputs/KAR Schedule_2.0.2_aarch64.dmg`입니다. Apple Silicon Mac용이며, Node/Rust/Excel이나 개발 서버 없이 실행됩니다.
+이 컴퓨터에서는 프로젝트의 `outputs/KAR Schedule 2.0.3.app`을 더블클릭하면 됩니다. 설치용 파일은 `outputs/KAR Schedule_2.0.3_aarch64.dmg`입니다. Apple Silicon Mac용이며, Node/Rust/Excel이나 개발 서버 없이 실행됩니다.
 
 [테스트 안내](docs/V2_TEST_GUIDE.md)에 업무 추가, 여러 달 일정, 드래그, Excel, 백업·복원 확인 순서를 적었습니다. 기존에 저장한 일정은 앱 업데이트 후에도 유지됩니다. 새 PC의 첫 실행은 빈 일정으로 시작합니다.
 
@@ -17,6 +17,8 @@ Windows 노트북에서는 [Windows 테스트 릴리스](https://github.com/kark
 상단 **Excel 연결 → 본인 로컬 업무 파일 선택 → 작성 → 저장 또는 Ctrl+S / ⌘S** 순서로 사용합니다. 연결 파일명과 위치는 그대로 유지되므로 FreeFileSync의 기존 동기화 설정을 사용할 수 있습니다. 입력창의 저장 버튼도 연결 Excel에 반영합니다. 드래그·삭제는 로컬에 먼저 보관하고 저장 버튼으로 Excel에 반영합니다. 백업·복원·다른 이름으로 내보내기는 **더 보기**에 있습니다.
 
 연결한 일정 시트와 ColorDB를 업데이트하고 다른 시트의 원본 XML·수식·관계를 보존합니다. 파일이 외부에서 변경됐거나 Excel 잠금 파일이 있으면 덮어쓰지 않고 알립니다. 연결 경로는 재실행 후에도 유지됩니다.
+
+신입은 Excel에서 내용 없는 새 `.xlsx`를 저장하고 닫은 뒤 **Excel 연결 → 새 업무일지 연도 → 빈 파일 연결 → 저장**으로 시작합니다. 선택한 시트에 1~12월 양식이 만들어집니다. **더 보기 → Excel 가져오기**에서 빈 파일을 골라도 같은 연결 화면을 엽니다. 기존 일정이 있으면 교체 여부를 확인합니다. 연도 안내는 오류와 구분하며, 일부 업무를 읽지 못한 파일은 연결·덮어쓰기를 차단합니다.
 
 ## 구현 범위
 

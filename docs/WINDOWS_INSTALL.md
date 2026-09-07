@@ -2,8 +2,8 @@
 
 일반 Intel/AMD 64비트 Windows 10/11용입니다. 개발 도구는 설치하지 않아도 됩니다.
 
-1. GitHub에 로그인하고 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.2-test.1)를 엽니다. 비공개 저장소이므로 접근 가능한 계정이 필요합니다.
-2. 아래 **Assets**에서 `KAR-Schedule_2.0.2_windows-x64-setup.exe`를 다운로드하고 실행해 설치합니다.
+1. GitHub에 로그인하고 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.3-test.1)를 엽니다. 비공개 저장소이므로 접근 가능한 계정이 필요합니다.
+2. 아래 **Assets**에서 `KAR-Schedule_2.0.3_windows-x64-setup.exe`를 다운로드하고 실행해 설치합니다.
 3. 시작 메뉴에서 **KAR Schedule**을 실행합니다. 새 PC는 빈 일정으로 시작합니다.
 4. 상단 **Excel 연결**로 노트북의 본인 업무 일지 `.xlsx`를 선택하고 일정 시트와 연도를 확인합니다.
 5. 업무를 수정하고 **저장 / Ctrl+S**를 누릅니다. 저장 완료를 확인한 뒤 FreeFileSync로 NAS에 동기화합니다.
