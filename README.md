@@ -4,11 +4,13 @@
 
 ## 지금 테스트하기
 
-NAS에서 바로 실행하려면 [테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.3-test.1)의 `portable.zip`을 받고 [NAS 세팅·첫 실행 안내](docs/NAS_START_HERE.txt)를 따르세요. Windows 읽기 전용 SMB 공유에서 시작과 로컬 데이터 생성을 확인했습니다.
+NAS에서 바로 실행하려면 [테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.4-test.1)의 `portable.zip`을 받고 [NAS 세팅·첫 실행 안내](docs/NAS_START_HERE.txt)를 따르세요. Windows 읽기 전용 SMB 공유에서 시작과 로컬 데이터 생성을 확인했습니다.
 
-Windows 노트북에서는 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.3-test.1)의 Assets에서 `.exe`를 다운로드해 설치합니다. [Windows 설치 안내](docs/WINDOWS_INSTALL.md)를 참고하세요. 사용자 PC에는 개발 도구가 필요 없습니다.
+Windows 노트북에서는 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.4-test.1)의 Assets에서 `.exe`를 다운로드해 설치합니다. [Windows 설치 안내](docs/WINDOWS_INSTALL.md)를 참고하세요. 사용자 PC에는 개발 도구가 필요 없습니다.
 
-이 컴퓨터에서는 프로젝트의 `outputs/KAR Schedule 2.0.3.app`을 더블클릭하면 됩니다. 설치용 파일은 `outputs/KAR Schedule_2.0.3_aarch64.dmg`입니다. Apple Silicon Mac용이며, Node/Rust/Excel이나 개발 서버 없이 실행됩니다.
+이 컴퓨터에서는 프로젝트의 `outputs/KAR Schedule 2.0.4.app`을 더블클릭하면 됩니다. 설치용 파일은 `outputs/KAR-Schedule_2.0.4_macos-apple-silicon.dmg`입니다. Apple Silicon Mac용이며, Node/Rust/Excel이나 개발 서버 없이 실행됩니다.
+
+2.0.4는 Excel 메모를 기본 숨김으로 저장하고 월별 요일에 일자를 함께 표시합니다. 기존 사용자는 앱을 종료하고 새 버전으로 교체한 뒤 연결된 파일에 한 번 저장하면 됩니다. DB 초기화나 Excel 재연결, FreeFileSync 재설정은 필요하지 않습니다. [변경 사항·업데이트 순서](docs/releases/v2.0.4-test.1.md)와 [검증 기록](docs/V2_0_4_VERIFICATION.md)을 참고하세요.
 
 [테스트 안내](docs/V2_TEST_GUIDE.md)에 업무 추가, 여러 달 일정, 드래그, Excel, 백업·복원 확인 순서를 적었습니다. 기존에 저장한 일정은 앱 업데이트 후에도 유지됩니다. 새 PC의 첫 실행은 빈 일정으로 시작합니다.
 

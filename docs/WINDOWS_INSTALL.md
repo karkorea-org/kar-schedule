@@ -2,13 +2,15 @@
 
 일반 Intel/AMD 64비트 Windows 10/11용입니다. 개발 도구는 설치하지 않아도 됩니다.
 
-1. GitHub에 로그인하고 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.3-test.1)를 엽니다. 비공개 저장소이므로 접근 가능한 계정이 필요합니다.
-2. 아래 **Assets**에서 `KAR-Schedule_2.0.3_windows-x64-setup.exe`를 다운로드하고 실행해 설치합니다.
+1. GitHub에 로그인하고 [Windows 테스트 릴리스](https://github.com/karkorea-org/kar-schedule/releases/tag/v2.0.4-test.1)를 엽니다. 비공개 저장소이므로 접근 가능한 계정이 필요합니다.
+2. 아래 **Assets**에서 `KAR-Schedule_2.0.4_windows-x64-setup.exe`를 다운로드하고 실행해 설치합니다.
 3. 시작 메뉴에서 **KAR Schedule**을 실행합니다. 새 PC는 빈 일정으로 시작합니다.
 4. 상단 **Excel 연결**로 노트북의 본인 업무 일지 `.xlsx`를 선택하고 일정 시트와 연도를 확인합니다.
 5. 업무를 수정하고 **저장 / Ctrl+S**를 누릅니다. 저장 완료를 확인한 뒤 FreeFileSync로 NAS에 동기화합니다.
 
 처음에는 업무 파일의 테스트용 복사본을 연결해 수정·저장·다시 열기를 확인하세요. 다른 직원은 NAS의 변경 파일을 자기 PC로 동기화한 뒤 Excel에서 열면 됩니다. 이미 열려 있던 Excel은 닫았다가 다시 열어 최신 파일을 확인합니다.
+
+이미 사용 중인 PC를 업데이트할 때는 앱을 종료하고 새 설치 파일을 실행합니다. 기존 업무와 연결 정보가 유지되므로 위 4번의 재연결은 필요하지 않습니다. NAS 실행형의 교체 방법과 새 Excel 표시 적용은 [2.0.4 업데이트 안내](releases/v2.0.4-test.1.md)를 참고하세요.
 
 설치 파일에는 개인 업무 Excel이나 작성 중인 SQLite가 포함되지 않습니다. SQLite는 앱 최초 실행 시 각 PC의 사용자 데이터 폴더에 생성됩니다. 공유할 파일은 연결한 Excel입니다.
 
